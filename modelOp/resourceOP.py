@@ -1,5 +1,5 @@
 import json
-from flask import Blueprint, request
+from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
 
 resource = Blueprint('resource', __name__)
@@ -166,3 +166,14 @@ def getRes():
     return audio
     # return "jiumi"
     # return audio
+
+@resource.route('/testPhoto',methods=['POST'])
+def testPhoto():
+    img = request.files.get('testPhoto')
+    book = request.form.get("book")
+    # 调用图像处理函数，得到结果，假设存放在result中
+    result = {
+
+    }
+    return jsonify(result)
+
