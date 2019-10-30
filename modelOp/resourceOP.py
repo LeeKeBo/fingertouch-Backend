@@ -1,4 +1,7 @@
 import json
+import os
+import random
+
 from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
 
@@ -12,7 +15,6 @@ def index():
 
 @resource.route('/Res', methods=['POST'])
 def makeRes():
-
     """
     划分区域
     ---
@@ -102,7 +104,6 @@ def makeRes():
 
 @resource.route('/Res', methods=['GET'])
 def getRes():
-
     """
     获取区域语音
     ---
@@ -144,8 +145,7 @@ def getRes():
 
     """
 
-
-    #获取json数据，并解析
+    # 获取json数据，并解析
     data = request.get_data()
     data = json.loads(data)
 
@@ -167,13 +167,33 @@ def getRes():
     # return "jiumi"
     # return audio
 
-@resource.route('/testPhoto',methods=['POST'])
+
+@resource.route('/testPhoto', methods=['POST'])
 def testPhoto():
-    img = request.files.get('testPhoto')
-    book = request.form.get("book")
+    print(request.json)
+# "./static/photo/"
+    filename = request.json.get('filename')
+    book = request.json.get("book")
+
     # 调用图像处理函数，得到结果，假设存放在result中
     result = {
 
     }
     return jsonify(result)
 
+
+@resource.route('/getPhoto', methods=['POST'])
+def getPhoto():
+    print(request)
+    img = request.files.get('file')
+    path = "./static/photo/"
+    salt = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    ext = img.filename.rsplit('.', 1)[1]
+    filename = ''
+    for i in range(6):
+        filename += random.choice(salt)
+    filename += "."+ext
+    path += filename
+    print(filename)
+    img.save(path)
+    return filename
