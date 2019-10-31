@@ -5,6 +5,10 @@ import random
 from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
 
+# 模型调用，此时并初始化了
+from tool import tool_model
+from config import IMG_DIR
+
 resource = Blueprint('resource', __name__)
 
 
@@ -171,13 +175,18 @@ def getRes():
 @resource.route('/testPhoto', methods=['POST'])
 def testPhoto():
     print(request.json)
-# "./static/photo/"
+
     filename = request.json.get('filename')
+    file_path = os.path.join(IMG_DIR, filename)
+    # 暂时没用上book，只有一本书的模型
     book = request.json.get("book")
 
     # 调用图像处理函数，得到结果，假设存放在result中
+    # out_put: {'Finger':[手指坐标,...], 'corner':[], }
+    pre_finger, pre_page = tool_model.run(file_path)
     result = {
-
+        'finger': pre_finger,
+        'page': pre_page,
     }
     return jsonify(result)
 
