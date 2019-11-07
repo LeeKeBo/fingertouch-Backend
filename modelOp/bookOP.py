@@ -1,5 +1,7 @@
+import random
+
 from flask import Blueprint, request, jsonify
-from model.model import db, Book
+from model.model import db, Book, bookphoto
 import json
 
 book = Blueprint('book', __name__)
@@ -56,17 +58,17 @@ def addBook():
 
     """
 
-    form = request.form
+    form = request.json
 
-    book = Book.query.filter_by(isbn=form['form'])
+    book = Book.query.filter_by(isbn=form['isbn']).first()
     if book is not None:
-        return "isbn can't be the same"
+        return {'code': -1, 'result': "该isbn号已存在，不能重复出现"}
     else:
         book = Book(isbn=form['isbn'], name=form['name'], author=form['author'], describe=form['describe'],
                     pages=form['pages'], publishing=form['publishing'])
         db.session.add(book)
         db.session.commit()
-        return 'add book successfully'
+        return {'code': 1, 'result': 'add book successfully'}
 
 
 @book.route('/book', methods=['GET'])
@@ -93,11 +95,11 @@ def getBook():
 
     """
 
-    isbn = request.args.get('isbn')
+    isbn = request.json['isbn']
 
     book = Book.query.filter_by(isbn=isbn).first()
     if book is None:
-        return "can't find this book"
+        return {'code': -1, 'result': "can't find this book"}
     else:
         # book = se
         return jsonify(book.serialize())
@@ -127,17 +129,18 @@ def deleteBook():
 
     """
 
-    isbn = request.args.get('isbn')
+    isbn = request.json['isbn']
     book = Book.query.filter_by(isbn=isbn).first()
     if book is None:
-        return "can't find this book"
+        return {'code': -1, 'result': "can't find this book"}
     else:
-        Book.query.filter_by(isbn=isbn).delete()
+        db.session.delete(book)
+        db.session.commit()
+        return {'code': 1, 'result': 'delete'}
 
 
 @book.route('/updateBook', methods=['POST'])
 def updateBook():
-
     """
     修改书籍
     ---
@@ -187,11 +190,10 @@ def updateBook():
 
     """
 
-
-    form = request.form
+    form = request.json
     book = Book.query.filter_by(isbn=form['isbn']).first()
     if book is None:
-        return "can't find the book"
+        return {'code': -1, 'result': "该书籍不存在"}
     else:
         book.author = form['author']
         book.publishing = form['publishing']
@@ -202,12 +204,11 @@ def updateBook():
         # Book.query.filter_by(isbn=form['isbn']).update(
         #     {'name': form['name'], 'author': form['author'], 'describe': form['describe'], 'pages': form['pages'],
         #      'publishing': form['publishing']})
-        return "update successfully"
+        return {'code': 1, 'result': "update successfully"}
 
 
 @book.route('/bookList', methods=['GET'])
 def bookList():
-
     """
     获取所有书籍
     ---
@@ -228,3 +229,22 @@ def bookList():
     bookList = Book.query.all()
     return jsonify(bookList=[book.serialize() for book in bookList])
 
+
+@book.route('/updatePhoto', methods=['post'])
+def updatePhoto():
+    img = request.files.get('file')
+    isbn = request.values['isbn']
+    path = "./static/bookphoto/"
+    salt = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789'
+    ext = img.filename.rsplit('.', 1)[1]
+    filename = ''
+    for i in range(6):
+        filename += random.choice(salt)
+    filename += "." + ext
+    path += filename
+    img.save(path)
+    newPhoto = bookphoto(isbn=isbn, address=path)
+    db.session.add(newPhoto)
+    db.session.commit()
+
+    return {'code': 1, 'result': 'update successfully'}

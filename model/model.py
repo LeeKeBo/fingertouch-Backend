@@ -19,7 +19,7 @@ class Book(db.Model):  # 书
             'author': self.author,
             'describe': self.describe,
             'pages': self.pages,
-            'publishing':self.publishing
+            'publishing': self.publishing
         }
 
     def __repr__(self):
@@ -77,3 +77,11 @@ class MarkArea(db.Model):  # 标定区域
 
     def __repr__(self):
         return '<markArea {}>'.format(self.isbn)
+
+
+class bookphoto(db.Model):
+    __tablename__ = "bookphoto"
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    isbn = db.Column(db.String(20), db.ForeignKey('books.isbn'), index=True)
+    index = db.Column(db.Integer)
+    address = db.Column(db.String(150))
