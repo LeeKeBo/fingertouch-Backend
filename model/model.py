@@ -19,7 +19,7 @@ class Book(db.Model):  # 书
             'author': self.author,
             'describe': self.describe,
             'pages': self.pages,
-            'publishing':self.publishing
+            'publishing': self.publishing
         }
 
     def __repr__(self):
@@ -63,17 +63,46 @@ class MarkArea(db.Model):  # 标定区域
     __tablename__ = "markareas"
     id = db.Column(db.Integer, unique=True, primary_key=True)
     isbn = db.Column(db.String(20), db.ForeignKey('books.isbn'), index=True)
-    index = db.Column(db.Integer)
-    firstX = db.Column(db.Float)
-    firstY = db.Column(db.Float)
-    secondX = db.Column(db.Float)
-    secondY = db.Column(db.Float)
-    thirdX = db.Column(db.Float)
-    thirdY = db.Column(db.Float)
-    forthX = db.Column(db.Float)
-    forthY = db.Column(db.Float)
+    count = db.Column(db.Integer)
+    relativeX = db.Column(db.Float)
+    relativeY = db.Column(db.Float)
+    relativeW = db.Column(db.Float)
+    relativeH = db.Column(db.Float)
+    name = db.Column(db.String(40))
+    uuid = db.Column(db.String(8))
     page = db.Column(db.Integer)
-    audio = db.Column(db.String(40))
+
+    audio = db.Column(db.String(50))
+
+    def serialize(self):
+        return {
+            'isbn': self.isbn,
+            'index': self.count,
+            'relativeX':self.relativeX,
+            'relativeY':self.relativeY,
+            'relativeW':self.relativeW,
+            'relativeH':self.relativeH,
+            'name': self.name,
+            'uuid': self.uuid,
+        }
+
 
     def __repr__(self):
         return '<markArea {}>'.format(self.isbn)
+
+
+class bookphoto(db.Model):
+    __tablename__ = "bookphoto"
+    id = db.Column(db.Integer, unique=True, primary_key=True)
+    isbn = db.Column(db.String(20), db.ForeignKey('books.isbn'), index=True)
+    page = db.Column(db.Integer)
+    uuid = db.Column(db.String(8))
+    address = db.Column(db.String(150))
+
+    def serialize(self):
+        return {
+            'isbn': self.isbn,
+            'index': self.index,
+            'src': self.address,
+            'uuid': self.uuid,
+        }

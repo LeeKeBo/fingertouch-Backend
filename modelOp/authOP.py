@@ -47,20 +47,27 @@ def login():
 
     """
 
-    email = request.form['email']
-    username = request.form['username']
-    password = request.form['password']
-    user = User.query.filter_by(email=email, username=username).first()
-    if user is not None and user.verify_password(password):
-        login_user(user)
-        return jsonify({
-            'code': 1,
-            'message': '登录成功'
-        })
+    #email = request.form['email']
+    data = request.json
+    username = data['username']
+    password = data['password']
+    user = User.query.filter_by(username=username).first()
+    if user is not None:
+        if user.verify_password(password):
+            login_user(user)
+            return jsonify({
+                'code': 1,
+                'result': '登录成功'
+            })
+        else:
+            return jsonify({
+                'code': -1,
+                'result': '密码错误'
+            })
     else:
         return jsonify({
-            'code': 0,
-            'message': '该用户未注册'
+            'code': -1,
+            'result': '该用户未注册'
         })
 
 
@@ -158,7 +165,8 @@ def register():
         'message': '注册成功'
     })
 
-@auth.route('/updatePassword',methods=['POST'])
+
+@auth.route('/updatePassword', methods=['POST'])
 def updateAuth():
     """
     修改密码
@@ -201,7 +209,8 @@ def updateAuth():
     """
     return 'yes'
 
-@auth.route('/updateName',methods=['POST'])
+
+@auth.route('/updateName', methods=['POST'])
 def updateName():
     """
     修改用户名
