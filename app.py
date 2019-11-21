@@ -24,9 +24,9 @@ def secret():
 
 @app.route('/')
 def hello_world():
-    print(app.url_map)
+    # print(app.url_map)
     return "hello"
 
 
 if __name__ == '__main__':
-    app.run(debug=True,host='0.0.0.0')
+    app.run(debug=True, host='0.0.0.0')

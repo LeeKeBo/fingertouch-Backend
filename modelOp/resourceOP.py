@@ -13,8 +13,8 @@ def index():
     return "hello world"
 
 
-@resource.route('/Res', methods=['POST'])
-def makeRes():
+@resource.route('/Area', methods=['POST'])
+def makeArea():
     """
     划分区域
     ---
@@ -30,50 +30,38 @@ def makeRes():
           id: 书籍区域划分
           required:
             - index
-            - firstX
-            - firstY
-            - secondX
-            - secondY
-            - thirdX
+            - x
+            - y
+            - w
+            - h
+            - page
             - thirdY
             - forthX
             - forthY
-            - page
           properties:
             index:
               type: int
               description: 区域编号.
-            firstX:
+            x:
               type: float
-              description: 第一个点横坐标.
-            firstY:
+              description: 左上角横坐标.
+            y:
               type: float
-              description: 第一个点纵坐标.
-            secondX:
+              description: 左上角纵坐标.
+            w:
               type: float
-              description: 第二个点横坐标.
-            secondY:
+              description: 矩形宽度.
+            h:
               type: float
-              description: 第二个点纵坐标.
-            thirdX:
-              type: float
-              description: 第三个点横坐标.
-            thirdY:
-              type: float
-              description: 第三个点纵坐标.
-            forthX:
-              type: float
-              description: 第四个点横坐标.
-            forthY:
-              type: float
-              description: 第四个点纵坐标.
-            page:
-              type: int
-              description: 所在页数
+              description: 矩形长度.
+
 
       - name: isbn
         in: string
         description: 书籍isbn号
+      - name: page
+        in: int
+        description: 页数
 
     responses:
       201:
@@ -86,20 +74,52 @@ def makeRes():
 
     # markAreas = request.form['markAreas']  # 标记坐标数组
     # isbn = request.form['isbn']  # 书本ISBN号
-
-    data = request.get_data()
-    data = json.loads(data)
+    data = request.json
 
     markAreas = data['markAreas']
     isbn = data['isbn']
+    page = data['page']
+    uuids = []
 
-    for area in markAreas:
-        newArea = MarkArea(isbn=isbn, index=area['index'], firstX=area['firstX'], firstY=area['firstY'],
-                           secondX=area['secondX'], secondY=area['secondY'], thirdX=area['thirdX'],
-                           thirdY=area['thirdY'], forthX=area['forthX'], forthY=area['forthY'], page=area['page'])
-        db.session.add(newArea)
+    if isbn == None or page == None:
+        return {'code': -1, 'result': 'isbn或页数不正确'}
+
+    # 保存或更新客户增加或修改的区域
+    for index in range(len(markAreas)):
+        area = markAreas[index]
+        uuids.append(area['uuid'])
+        oldArea = MarkArea.query.filter_by(uuid=area['uuid']).first()
+        if oldArea == None:
+            newArea = MarkArea(isbn=isbn, count=index, relativeX=area['relativeX'], relativeY=area['relativeY'],
+                               relativeW=area['relativeW'], relativeH=area['relativeH'], page=page, name=area['name'], uuid=area['uuid'])
+            db.session.add(newArea)
+        else:
+            oldArea.relativeX = area['relativeX']
+            oldArea.relativeY = area['relativeY']
+            oldArea.relativeW = area['relativeW']
+            oldArea.relativeH = area['relativeH']
+            oldArea.name = area['name']
+            oldArea.count = index
+
+    # 删除被客户删除的区域
+    areas = MarkArea.query.filter_by(page=page, isbn=isbn).all()
+    for area in areas:
+        if area.uuid not in uuids:
+            db.session.delete(area)
+
+    # for index, area in markAreas:
     db.session.commit()
-    return 'successful'
+    return {'code': 1, 'result': '已保存分区信息'}
+
+
+@resource.route('/Area', methods=['GET'])
+def getArea():
+    data = request.args
+    isbn = data['isbn']
+    page = data['page']
+
+    areas = MarkArea.query.filter_by(page=page, isbn=isbn).all()
+    return jsonify(areas=[area.serialize() for area in areas])
 
 
 @resource.route('/Res', methods=['GET'])
@@ -146,24 +166,24 @@ def getRes():
     """
 
     # 获取json数据，并解析
-    data = request.get_data()
-    data = json.loads(data)
+    data = request.json
 
     clickArea = data['clickArea']
     isbn = data['isbn']
 
-    x = clickArea['x']
-    y = clickArea['y']
-    page = clickArea['page']
-    audio = db.session.query(MarkArea.audio).filter(MarkArea.isbn == isbn, MarkArea.firstX >= x, MarkArea.firstY <= y,
-                                                    MarkArea.secondX >= x,
-                                                    MarkArea.secondY <= y, MarkArea.thirdX <= x, MarkArea.thirdY >= y,
-                                                    MarkArea.forthX >= x,
-                                                    MarkArea.forthY >= y, MarkArea.page == page).first()
-    # print(audio)
-    if audio is None:
-        return "have no this audio"
-    return audio
+    # # x = clickArea['x']
+    # # y = clickArea['y']
+    # # page = clickArea['page']
+    # # audio = db.session.query(MarkArea.audio).filter(MarkArea.isbn == isbn, MarkArea.firstX >= x, MarkArea.firstY <= y,
+    # #                                                 MarkArea.secondX >= x,
+    # #                                                 MarkArea.secondY <= y, MarkArea.thirdX <= x, MarkArea.thirdY >= y,
+    # #                                                 MarkArea.forthX >= x,
+    # #                                                 MarkArea.forthY >= y, MarkArea.page == page).first()
+    # # print(audio)
+    # if audio is None:
+    #     return "have no this audio"
+    # return audio
+    return "have not write"
     # return "jiumi"
     # return audio
 
@@ -171,7 +191,7 @@ def getRes():
 @resource.route('/testPhoto', methods=['POST'])
 def testPhoto():
     print(request.json)
-# "./static/photo/"
+    # "./static/photo/"
     filename = request.json.get('filename')
     book = request.json.get("book")
 
@@ -192,7 +212,7 @@ def getPhoto():
     filename = ''
     for i in range(6):
         filename += random.choice(salt)
-    filename += "."+ext
+    filename += "." + ext
     path += filename
     print(filename)
     img.save(path)
