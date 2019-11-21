@@ -6,8 +6,8 @@ from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
 
 # 模型调用，此时并初始化了
-from tool import tool_model
-from config import IMG_DIR
+# from tool import tool_model
+# from config import IMG_DIR
 
 resource = Blueprint('resource', __name__)
 
