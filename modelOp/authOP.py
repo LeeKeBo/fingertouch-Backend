@@ -1,6 +1,6 @@
-from flask import request, flash, url_for, Blueprint, jsonify
-from flask_login import login_user, logout_user, login_required, current_user
-
+import datetime
+from flask import request, Blueprint, jsonify, session
+from conf.conf import login_required
 from model.model import User, db, Role
 
 auth = Blueprint('auth', __name__)
@@ -47,17 +47,24 @@ def login():
 
     """
 
-    #email = request.form['email']
+    # email = request.form['email']
     data = request.json
     username = data['username']
     password = data['password']
     user = User.query.filter_by(username=username).first()
     if user is not None:
         if user.verify_password(password):
-            login_user(user)
+            # login_user(user)
+            # 设置session, 为登录时间戳
+            session.permanent = True
+            session['user'] = user.username
+            session['type'] = user.role_id
+            user.last_login = datetime.datetime.now()
+            userType = db.session.query(Role.type).filter_by(id=user.role_id).first()
             return jsonify({
                 'code': 1,
-                'result': '登录成功'
+                'result': '登录成功',
+                'type': userType[0]
             })
         else:
             return jsonify({
@@ -91,7 +98,8 @@ def logout():
 
     """
 
-    logout_user()
+    session.pop('user')
+    # logout_user()
     return jsonify({
         'code': 1,
         'message': '注销成功'
@@ -105,6 +113,7 @@ def index():
 
 
 @auth.route('/register', methods=['POST'])
+@login_required
 def register():
     """
     用户注册
@@ -147,26 +156,29 @@ def register():
         description: 注册有误，参数有误等
 
     """
-
-    username = request.form['username']
-    email = request.form['email']
-    password = request.form['password']
-    type = request.form['type']
-    user = User.query.filter_by(email=email).first()
+    if session['type'] != 1:
+        return {'code': -1, 'result': '需superAdmin用户才能添加用户'}
+    username = request.json['username']
+    #    email = request.json['email']
+    password = request.json['newPass']
+    password2 = request.json['newPass2']
+    type = request.json['type']
+    user = User.query.filter_by(username=username).first()
     if user is not None:
-        return 'this email has been register'
+        return {'code': -1, 'result': '此用户名已被注册'}
     role = Role.query.filter_by(type=type).first()
     if role is None:
-        return 'can not find the role'
-    db.session.add(User(username=username, email=email, password=password, role_id=role.id))
+        return {'code': -1, 'result': '此用户类型未找到'}
+    db.session.add(User(username=username, password=password, role_id=role.id))
     db.session.commit()
     return jsonify({
         'code': 1,
-        'message': '注册成功'
+        'result': '注册成功'
     })
 
 
 @auth.route('/updatePassword', methods=['POST'])
+@login_required
 def updateAuth():
     """
     修改密码
@@ -205,9 +217,18 @@ def updateAuth():
           example: {'code':1,'message':修改成功}
       406:
         description: 修改失败
-
     """
-    return 'yes'
+    if session['role_id'] != 1:
+        return {'code': -1, 'result': '权限不足，仅superAdmin能修改密码'}
+    username = request.json['username']
+    password = request.json['newPass']
+    password2 = request.json['newPass2']
+    if password != password2:
+        return {'code': -1, 'result': '两次密码不一致'}
+    user = User.query.filter_by(username=username).first()
+    user.password = password
+    db.session.commit()
+    return {'code': 1, 'result': '修改成功'}
 
 
 @auth.route('/updateName', methods=['POST'])
@@ -244,3 +265,28 @@ def updateName():
 
     """
     return 'yes'
+
+
+@auth.route('/user', methods=['DELETE'])
+@login_required
+def deleteUser():
+    username = request.json['username']
+    if session['type'] != 1:
+        return {'code': -1, 'result': '需superAdmin才能删除用户'}
+    if session['user'] == username:
+        return {'code': -1, 'result': '自己不能删除自己T_T'}
+    user = User.query.filter_by(username=username).first()
+    if user is None:
+        return {'code': -1, 'result': '该用户不存在，请刷新重试'}
+    db.session.delete(user)
+    db.session.commit()
+    return {'code': 1, 'result': '用户已删除'}
+
+
+@auth.route('/getUser', methods=['GET'])
+@login_required
+def getUser():
+    users = db.session.query(User.username, Role.type, User.last_login).filter(User.role_id == Role.id).all()
+    result = [dict(zip(user.keys(), user)) for user in users]
+    result = jsonify(result)
+    return result

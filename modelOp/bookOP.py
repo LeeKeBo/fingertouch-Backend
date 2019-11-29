@@ -1,7 +1,6 @@
 import random
+from conf.conf import login_required
 from flask import Blueprint, request, jsonify
-from sqlalchemy import JSON
-
 from model.model import db, Book, bookphoto
 import json
 
@@ -9,6 +8,7 @@ book = Blueprint('book', __name__)
 
 
 @book.route('/book', methods=['POST'])
+@login_required
 def addBook():
     """
     添加书籍
@@ -107,6 +107,7 @@ def getBook():
 
 
 @book.route('/book', methods=['DELETE'])
+@login_required
 def deleteBook():
     """
     删除书籍
@@ -141,6 +142,7 @@ def deleteBook():
 
 
 @book.route('/updateBook', methods=['POST'])
+@login_required
 def updateBook():
     """
     修改书籍
@@ -209,6 +211,7 @@ def updateBook():
 
 
 @book.route('/bookList', methods=['GET'])
+@login_required
 def bookList():
     """
     获取所有书籍
@@ -232,6 +235,7 @@ def bookList():
 
 
 @book.route('/uploadPhoto', methods=['post'])
+@login_required
 def uploadPhoto():
     img = request.files.get('file')
     isbn = request.values['isbn']
@@ -258,21 +262,21 @@ def uploadPhoto():
 
 
 @book.route('/getPhoto', methods=['get'])
+@login_required
 def getPhoto():
     data = request.args
     isbn = data['isbn']
     photos = db.session.query(bookphoto.address.label("src"), bookphoto.uuid).filter_by(isbn=isbn).order_by(
         bookphoto.page).all()
-    print(photos)
     result = [dict(zip(photo.keys(), photo)) for photo in photos]
     result = jsonify(result)
-    print(result)
     return result
     # jsonify(photos=[photo.serialize() for photo in photos])
 
 
 # 提交修改顺序后的书籍页
 @book.route('/uploadOrder', methods=['post'])
+@login_required
 def uploadOrder():
     data = request.json
     for index, value in enumerate(data):
@@ -283,3 +287,16 @@ def uploadOrder():
         else:
             return {'code': -1, 'result': '修改出错，图片未找到，请重试'}
     return {'code': 1, 'result': '成功修改图片顺序'}
+
+# 删除图片
+@book.route('/photo', methods=['DELETE'])
+@login_required
+def deletePhoto():
+    uuid = request.json['uuid']
+    photo = bookphoto.query.filter_by(uuid=uuid).first()
+    if photo is None:
+        return {'code': -1, 'result': '图片不存在'}
+    else:
+        db.session.delete(photo)
+        db.session.commit()
+        return {'code': 1, 'result': '成功删除'}

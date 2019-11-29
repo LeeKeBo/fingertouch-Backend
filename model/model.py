@@ -42,6 +42,7 @@ class User(UserMixin, db.Model):  # 用户
     username = db.Column(db.String(60))
     password = db.Column(db.String(128))
     role_id = db.Column(db.Integer, db.ForeignKey('roles.id'))  # 引入外键
+    last_login = db.Column(db.DateTime)
     password_hash = db.Column(db.String(128))
 
     @property
