@@ -1,11 +1,11 @@
-import random
+import random, os
 from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
 # <<<<<<< HEAD
 
 # 模型调用，此时并初始化了
-# from tool import tool_model
-# from config import IMG_DIR
+from tool import tool_model
+from config import IMG_DIR
 
 from conf.conf import login_required
 resource = Blueprint('resource', __name__)
