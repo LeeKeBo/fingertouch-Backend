@@ -1,6 +1,4 @@
 #忽略
-*.pyc
-
 /.idea
 
 /static
@@ -8,4 +6,7 @@
 /__pycache__
 
 /venv-linux
+
 /venv
+
+*.pyc
