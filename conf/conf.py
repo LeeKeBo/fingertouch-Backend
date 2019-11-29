@@ -4,7 +4,8 @@ from flask_sqlalchemy import SQLAlchemy
 import time
 from functools import wraps
 
-app = Flask(__name__)
+#app = Flask(__name__)
+app = Flask(__name__, root_path='/home/fingertouch/fingertouch-Backend2/')
 # DB_URI = 'mysql+mysqldb://{}:{}@{}/{}.format(USERNAME，PASSWORD，HOSTNAME，PORT，DATABASE)'
 # app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://root:toor@127.0.0.1:3306/wantong'
 app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
