@@ -1,14 +1,13 @@
-from conf.conf import app
+from conf.conf import app,login_required
 from flasgger import Swagger
-from flask_login import login_required
-from flask import jsonify
-from modelOp import login_manager
+from functools import wraps
+from flask import session
+# from modelOp import login_manager
 from modelOp.authOP import auth
 from modelOp.resourceOP import resource
 from modelOp.bookOP import book
 
-
-login_manager.setup_app(app)
+# login_manager.setup_app(app)
 app.register_blueprint(auth, url_prefix='/auth')
 app.register_blueprint(resource, url_prefix='/resource')
 app.register_blueprint(book, url_prefix='/book')

@@ -1,10 +1,7 @@
-import json
-import os
 import random
-
 from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
-
+from conf.conf import login_required
 resource = Blueprint('resource', __name__)
 
 
@@ -14,6 +11,7 @@ def index():
 
 
 @resource.route('/Area', methods=['POST'])
+@login_required
 def makeArea():
     """
     划分区域
@@ -113,6 +111,7 @@ def makeArea():
 
 
 @resource.route('/Area', methods=['GET'])
+@login_required
 def getArea():
     data = request.args
     isbn = data['isbn']
@@ -123,6 +122,7 @@ def getArea():
 
 
 @resource.route('/Res', methods=['GET'])
+@login_required
 def getRes():
     """
     获取区域语音
@@ -189,6 +189,7 @@ def getRes():
 
 
 @resource.route('/testPhoto', methods=['POST'])
+@login_required
 def testPhoto():
     print(request.json)
     # "./static/photo/"
@@ -203,6 +204,7 @@ def testPhoto():
 
 
 @resource.route('/getPhoto', methods=['POST'])
+@login_required
 def getPhoto():
     print(request)
     img = request.files.get('file')
