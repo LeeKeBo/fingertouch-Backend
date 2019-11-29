@@ -1,7 +1,6 @@
 import random, os
 from flask import Blueprint, request, jsonify
 from model.model import MarkArea, db
-# <<<<<<< HEAD
 
 # 模型调用，此时并初始化了
 from tool import tool_model

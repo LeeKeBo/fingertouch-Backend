@@ -4,21 +4,22 @@ from flask_sqlalchemy import SQLAlchemy
 import time
 from functools import wraps
 
+
 #app = Flask(__name__)
-app = Flask(__name__, root_path='/home/fingertouch/fingertouch-Backend2/')
-# DB_URI = 'mysql+mysqldb://{}:{}@{}/{}.format(USERNAME，PASSWORD，HOSTNAME，PORT，DATABASE)'
-# app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://root:toor@127.0.0.1:3306/wantong'
-# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
-
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://finger:Finger@123@127.0.0.1:3306/fingertouch'
-
 #app = Flask(__name__,root_path='D:\code/backEnd/fingertouch-Backend2')
+# root-path 填项目在服务器上的路径
+app = Flask(__name__, root_path='/home/fingertouch/fingertouch-Backend2/')
+
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://finger:Finger@123@127.0.0.1:3306/fingertouch'
 #app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
+
+
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=True
-app.config['SECRET_KEY'] = '123456'
-app.config['DEBUG'] = True
+app.config['SECRET_KEY'] = 'fingertouchsecretkey'
+
+#app.config['DEBUG'] = True
 app.permanent_session_lifetime = datetime.timedelta(seconds=60*20)
-# app.register_blueprint(auth)
 db = SQLAlchemy(app)
 
 # 自定义登录拦截器

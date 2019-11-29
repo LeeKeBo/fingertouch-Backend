@@ -60,6 +60,7 @@ def login():
             session['user'] = user.username
             session['type'] = user.role_id
             user.last_login = datetime.datetime.now()
+            db.session.commit()
             userType = db.session.query(Role.type).filter_by(id=user.role_id).first()
             return jsonify({
                 'code': 1,
