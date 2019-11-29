@@ -8,7 +8,10 @@ from functools import wraps
 app = Flask(__name__, root_path='/home/fingertouch/fingertouch-Backend2/')
 # DB_URI = 'mysql+mysqldb://{}:{}@{}/{}.format(USERNAME，PASSWORD，HOSTNAME，PORT，DATABASE)'
 # app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://root:toor@127.0.0.1:3306/wantong'
-app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
+# app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
+
+app.config['SQLALCHEMY_DATABASE_URI'] = 'mysql+pymysql://finger:Finger@123@127.0.0.1:3306/fingertouch'
+
 #app = Flask(__name__,root_path='D:\code/backEnd/fingertouch-Backend2')
 #app.config['SQLALCHEMY_DATABASE_URI']='mysql+pymysql://wen:123456@127.0.0.1:3306/fingertouch'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS']=True
