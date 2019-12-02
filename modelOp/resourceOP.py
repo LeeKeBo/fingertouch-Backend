@@ -7,6 +7,7 @@ from tool import tool_model
 from config import IMG_DIR
 
 from conf.conf import login_required
+
 resource = Blueprint('resource', __name__)
 
 
@@ -94,7 +95,8 @@ def makeArea():
         oldArea = MarkArea.query.filter_by(uuid=area['uuid']).first()
         if oldArea == None:
             newArea = MarkArea(isbn=isbn, count=index, relativeX=area['relativeX'], relativeY=area['relativeY'],
-                               relativeW=area['relativeW'], relativeH=area['relativeH'], page=page, name=area['name'], uuid=area['uuid'])
+                               relativeW=area['relativeW'], relativeH=area['relativeH'], page=page, name=area['name'],
+                               uuid=area['uuid'])
             db.session.add(newArea)
         else:
             oldArea.relativeX = area['relativeX']
@@ -207,9 +209,12 @@ def testPhoto():
     # 调用图像处理函数，得到结果，假设存放在result中
     # out_put: {'Finger':[手指坐标,...], 'corner':[], }
     pre_finger, pre_page = tool_model.run(file_path)
+    path = "./static/result/"
+    res_img = os.path.join(path, filename)
     result = {
         'finger': pre_finger,
         'page': pre_page,
+        'img': res_img,
     }
     return jsonify(result)
 
